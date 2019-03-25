@@ -1,0 +1,6 @@
+current: test
+env:
+  dev:
+    xxx: xxx
+  test:
+    xxx: xxx
