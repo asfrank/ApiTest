@@ -30,9 +30,7 @@ public class Api {
 
     public static String updateJsonFromMap(String path, HashMap<String, Object> map){
         DocumentContext documentContext = JsonPath.parse(Api.class.getResourceAsStream(path));
-        map.entrySet().forEach(entry->{
-            documentContext.set(entry.getKey(), entry.getValue());
-        });
+        map.forEach((key, value) -> documentContext.set(key, value));
         return documentContext.jsonString();
     }
 
@@ -51,9 +49,7 @@ public class Api {
             return restful;
         }
         if (restful.method.toLowerCase().contains("get")){
-            map.entrySet().forEach(entry->{
-                restful.query.replace(entry.getKey(), entry.getValue().toString());
-            });
+            map.forEach((key, value) -> restful.query.replace(key, value.toString()));
         }
         if (restful.method.toLowerCase().contains("post")){
             if (map.containsKey("json_body")){
@@ -72,9 +68,7 @@ public class Api {
         RequestSpecification requestSpecification = getDefaultRequestSpecification();
 
         if (restful.query!=null){
-            restful.query.entrySet().forEach(entry->{
-                requestSpecification.queryParam(entry.getKey(), entry.getValue());
-            });
+            restful.query.forEach((key, value) -> requestSpecification.queryParam(key, value));
         }
         if (restful.body!=null){
             requestSpecification.body(restful.body);
@@ -99,7 +93,7 @@ public class Api {
         try {
             Har har = harReader.readFromFile(new File(URLDecoder.decode(getClass().getResource(path).getFile()),"utf-8"));
             HarRequest request = new HarRequest();
-            Boolean match = false;
+            boolean match = false;
             for (HarEntry entry :har.getLog().getEntries()){
                 request = entry.getRequest();
                 if (request.getUrl().matches(pattern)){
@@ -113,8 +107,9 @@ public class Api {
             }
             Restful restful = new Restful();
             restful.method = request.getMethod().name().toLowerCase();
-            //todo: 去掉url中的query部分
-            restful.url = request.getUrl();
+            //fixed: 去掉url中的query部分
+            int index = request.getUrl().indexOf("?");
+            restful.url = request.getUrl().substring(0,index);
             request.getQueryString().forEach(q->{
                 restful.query.put(q.getName(), q.getValue());
             });
